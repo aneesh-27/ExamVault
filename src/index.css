@@ -1,0 +1,128 @@
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =========================================================================
+   StudyAI design tokens & shared styles
+   Ink navy for authority/structure, warm paper background (not the AI-cliché
+   cream+terracotta), a single highlighter-amber accent used sparingly for
+   the "AI insight" moments, serif for headings (textbook register), Inter
+   for interface text.
+   ========================================================================= */
+
+html, body, #root {
+  height: 100%;
+}
+
+.sa-root {
+  --ink: #14213D;
+  --ink-2: #1E2F52;
+  --paper: #F9F8F4;
+  --surface: #FFFFFF;
+  --text: #1C2130;
+  --muted: #6B7280;
+  --line: #E7E4DA;
+  --accent: #E8A33D;
+  --accent-ink: #7A4E10;
+  --accent-soft: #FBEBD1;
+  --success: #2F7D5E;
+  --success-soft: #E4F1EB;
+  --danger: #B8493C;
+  --danger-soft: #F6E5E2;
+  --info: #3A6EA5;
+  font-family: 'Inter', sans-serif;
+  color: var(--text);
+  background: var(--paper);
+}
+.sa-serif { font-family: 'Newsreader', serif; }
+.sa-root ::selection { background: var(--accent-soft); }
+
+.sa-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+.sa-card-lg { border-radius: 20px; }
+.sa-btn-primary {
+  background: var(--ink);
+  color: #fff;
+  border-radius: 10px;
+  transition: background .15s ease, transform .1s ease;
+}
+.sa-btn-primary:hover { background: var(--ink-2); }
+.sa-btn-primary:active { transform: scale(0.98); }
+.sa-btn-accent {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-radius: 10px;
+  transition: filter .15s ease, transform .1s ease;
+  font-weight: 600;
+}
+.sa-btn-accent:hover { filter: brightness(0.95); }
+.sa-btn-accent:active { transform: scale(0.98); }
+.sa-btn-outline {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--text);
+  border-radius: 10px;
+  transition: border-color .15s ease, background .15s ease;
+}
+.sa-btn-outline:hover { border-color: var(--ink); background: #F4F2EC; }
+
+.sa-sidebar { background: var(--ink); }
+.sa-nav-item {
+  color: #C7CEE0;
+  border-radius: 10px;
+  transition: background .15s ease, color .15s ease;
+}
+.sa-nav-item:hover { background: rgba(255,255,255,0.06); color: #fff; }
+.sa-nav-item.active { background: rgba(232,163,61,0.14); color: var(--accent); }
+
+.sa-progress-track { background: #EDEAE1; border-radius: 999px; overflow: hidden; }
+.sa-progress-fill { background: var(--ink); border-radius: 999px; transition: width .5s ease; }
+.sa-progress-fill.accent { background: var(--accent); }
+.sa-progress-fill.success { background: var(--success); }
+
+.sa-fade-in { animation: saFadeIn .35s ease both; }
+@keyframes saFadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+.sa-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
+.sa-scroll::-webkit-scrollbar-thumb { background: #DDD9CC; border-radius: 999px; }
+
+.sa-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px;
+}
+.sa-option-card {
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  transition: border-color .15s ease, background .15s ease;
+  cursor: pointer;
+}
+.sa-option-card:hover { border-color: #C9CADA; }
+.sa-option-card.selected { border-color: var(--ink); background: #F4F2EC; }
+.sa-option-card.correct { border-color: var(--success); background: var(--success-soft); }
+.sa-option-card.incorrect { border-color: var(--danger); background: var(--danger-soft); }
+
+.sa-flip-card { perspective: 1400px; }
+.sa-flip-inner {
+  position: relative; width: 100%; height: 100%;
+  transition: transform .5s cubic-bezier(.4,.2,.2,1);
+  transform-style: preserve-3d;
+}
+.sa-flip-inner.flipped { transform: rotateY(180deg); }
+.sa-flip-face {
+  position: absolute; inset: 0; backface-visibility: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+.sa-flip-back { transform: rotateY(180deg); }
+
+.sa-toast {
+  animation: saToastIn .25s ease both;
+}
+@keyframes saToastIn { from { opacity:0; transform: translateY(10px);} to {opacity:1; transform: translateY(0);} }
+
+/* Used by the upload-processing spinner in UploadPage */
+@keyframes spin { to { transform: rotate(360deg); } }
