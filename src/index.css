@@ -5,25 +5,32 @@
 @tailwind utilities;
 
 /* =========================================================================
-   StudyAI design tokens & shared styles
-   Ink navy for authority/structure, warm paper background (not the AI-cliché
-   cream+terracotta), a single highlighter-amber accent used sparingly for
-   the "AI insight" moments, serif for headings (textbook register), Inter
-   for interface text.
+  ExamVault design tokens & shared styles
+   Ink navy for authority/structure, warm paper background in light mode,
+   sleek midnight slate in dark mode, highlighter-amber accent for AI insights,
+   Newsreader serif for textbook register headings, Inter for UI text.
    ========================================================================= */
 
 html, body, #root {
   height: 100%;
 }
 
-.sa-root {
+:root {
+  /* Light theme default tokens */
   --ink: #14213D;
   --ink-2: #1E2F52;
+  --ink-btn: #14213D;
+  --ink-btn-hover: #1E2F52;
+  --ink-btn-text: #FFFFFF;
   --paper: #F9F8F4;
   --surface: #FFFFFF;
+  --surface-subtle: #F4F2EC;
+  --surface-hover: #EDEAE1;
   --text: #1C2130;
+  --text-contrast: #FFFFFF;
   --muted: #6B7280;
   --line: #E7E4DA;
+  --line-subtle: #EDEAE1;
   --accent: #E8A33D;
   --accent-ink: #7A4E10;
   --accent-soft: #FBEBD1;
@@ -32,10 +39,64 @@ html, body, #root {
   --danger: #B8493C;
   --danger-soft: #F6E5E2;
   --info: #3A6EA5;
+  --info-soft: #E5EEF7;
+  --sidebar-bg: #14213D;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-hover: rgba(255, 255, 255, 0.06);
+  --input-bg: #F1EFE8;
+  --chip-bg: #EFEDE6;
+  --chip-text: #54596B;
+  --border-dashed: #CFCBBB;
+  --scroll-thumb: #DDD9CC;
+  --shadow-color: rgba(20, 33, 61, 0.08);
+  --shadow-popup: rgba(20, 33, 61, 0.15);
+}
+
+html.dark, .dark {
+  /* Dark theme tokens: deep midnight slate & luminous amber */
+  --ink: #25334D;
+  --ink-2: #324364;
+  --ink-btn: #F1F5F9;
+  --ink-btn-hover: #FFFFFF;
+  --ink-btn-text: #0F172A;
+  --paper: #0B0F17;
+  --surface: #131926;
+  --surface-subtle: #1A2234;
+  --surface-hover: #222C42;
+  --text: #F1F5F9;
+  --text-contrast: #0F172A;
+  --muted: #94A3B8;
+  --line: #222C40;
+  --line-subtle: #1A2335;
+  --accent: #F59E0B;
+  --accent-ink: #FDE68A;
+  --accent-soft: rgba(245, 158, 11, 0.16);
+  --success: #34D399;
+  --success-soft: rgba(52, 211, 153, 0.16);
+  --danger: #F87171;
+  --danger-soft: rgba(248, 113, 113, 0.16);
+  --info: #38BDF8;
+  --info-soft: rgba(56, 189, 248, 0.16);
+  --sidebar-bg: #070B12;
+  --sidebar-border: rgba(255, 255, 255, 0.07);
+  --sidebar-hover: rgba(255, 255, 255, 0.06);
+  --input-bg: #182030;
+  --chip-bg: #1A2234;
+  --chip-text: #94A3B8;
+  --border-dashed: #334155;
+  --scroll-thumb: #334155;
+  --shadow-color: rgba(0, 0, 0, 0.35);
+  --shadow-popup: rgba(0, 0, 0, 0.5);
+}
+
+.sa-root {
   font-family: 'Inter', sans-serif;
   color: var(--text);
   background: var(--paper);
+  min-height: 100%;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
+
 .sa-serif { font-family: 'Newsreader', serif; }
 .sa-root ::selection { background: var(--accent-soft); }
 
@@ -43,45 +104,87 @@ html, body, #root {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 14px;
+  color: var(--text);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 .sa-card-lg { border-radius: 20px; }
+
 .sa-btn-primary {
-  background: var(--ink);
-  color: #fff;
+  background: var(--ink-btn);
+  color: var(--ink-btn-text);
   border-radius: 10px;
-  transition: background .15s ease, transform .1s ease;
+  font-weight: 500;
+  transition: background-color .15s ease, transform .1s ease, color .15s ease;
 }
-.sa-btn-primary:hover { background: var(--ink-2); }
+.sa-btn-primary:hover { background: var(--ink-btn-hover); }
 .sa-btn-primary:active { transform: scale(0.98); }
+
 .sa-btn-accent {
   background: var(--accent);
-  color: var(--accent-ink);
+  color: #1A1408;
   border-radius: 10px;
   transition: filter .15s ease, transform .1s ease;
   font-weight: 600;
 }
-.sa-btn-accent:hover { filter: brightness(0.95); }
+.sa-btn-accent:hover { filter: brightness(1.08); }
 .sa-btn-accent:active { transform: scale(0.98); }
+
 .sa-btn-outline {
   background: transparent;
   border: 1px solid var(--line);
   color: var(--text);
   border-radius: 10px;
-  transition: border-color .15s ease, background .15s ease;
+  transition: border-color .15s ease, background-color .15s ease, color .15s ease;
 }
-.sa-btn-outline:hover { border-color: var(--ink); background: #F4F2EC; }
+.sa-btn-outline:hover {
+  border-color: var(--muted);
+  background: var(--surface-subtle);
+}
 
-.sa-sidebar { background: var(--ink); }
+.sa-auth-input {
+  width: 100%;
+  height: 44px;
+  padding: 0 12px;
+  background: var(--input-bg);
+  color: var(--text);
+  border: 1px solid transparent;
+  border-radius: 10px;
+  outline: none;
+  font-size: 14px;
+  transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+}
+.sa-auth-input::placeholder { color: var(--muted); }
+.sa-auth-input.pl-10 { padding-left: 40px; }
+.sa-auth-input.pr-11 { padding-right: 44px; }
+.sa-auth-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+  background: var(--surface);
+}
+
+.sa-sidebar {
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--sidebar-border);
+  transition: background-color 0.2s ease;
+}
 .sa-nav-item {
   color: #C7CEE0;
   border-radius: 10px;
-  transition: background .15s ease, color .15s ease;
+  transition: background-color .15s ease, color .15s ease;
 }
-.sa-nav-item:hover { background: rgba(255,255,255,0.06); color: #fff; }
+.sa-nav-item:hover { background: var(--sidebar-hover); color: #fff; }
 .sa-nav-item.active { background: rgba(232,163,61,0.14); color: var(--accent); }
 
-.sa-progress-track { background: #EDEAE1; border-radius: 999px; overflow: hidden; }
-.sa-progress-fill { background: var(--ink); border-radius: 999px; transition: width .5s ease; }
+.sa-progress-track {
+  background: var(--line-subtle);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.sa-progress-fill {
+  background: var(--accent);
+  border-radius: 999px;
+  transition: width .5s ease;
+}
 .sa-progress-fill.accent { background: var(--accent); }
 .sa-progress-fill.success { background: var(--success); }
 
@@ -89,20 +192,22 @@ html, body, #root {
 @keyframes saFadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
 .sa-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
-.sa-scroll::-webkit-scrollbar-thumb { background: #DDD9CC; border-radius: 999px; }
+.sa-scroll::-webkit-scrollbar-thumb { background: var(--scroll-thumb); border-radius: 999px; }
 
 .sa-badge {
   display: inline-flex; align-items: center; gap: 4px;
   font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px;
 }
 .sa-option-card {
+  background: var(--surface);
+  color: var(--text);
   border: 1.5px solid var(--line);
   border-radius: 12px;
-  transition: border-color .15s ease, background .15s ease;
+  transition: border-color .15s ease, background-color .15s ease;
   cursor: pointer;
 }
-.sa-option-card:hover { border-color: #C9CADA; }
-.sa-option-card.selected { border-color: var(--ink); background: #F4F2EC; }
+.sa-option-card:hover { border-color: var(--muted); background: var(--surface-subtle); }
+.sa-option-card.selected { border-color: var(--accent); background: var(--surface-subtle); }
 .sa-option-card.correct { border-color: var(--success); background: var(--success-soft); }
 .sa-option-card.incorrect { border-color: var(--danger); background: var(--danger-soft); }
 
@@ -121,6 +226,9 @@ html, body, #root {
 
 .sa-toast {
   animation: saToastIn .25s ease both;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--line);
 }
 @keyframes saToastIn { from { opacity:0; transform: translateY(10px);} to {opacity:1; transform: translateY(0);} }
 

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Landing from "./components/Landing";
 import Sidebar from "./components/Sidebar";
 import Topbar from "./components/Topbar";
@@ -16,10 +16,19 @@ import MockExamIntro from "./components/MockExam";
 import Planner from "./components/Planner";
 import ProgressPage from "./components/Progress";
 import SettingsPage from "./components/Settings";
+import AuthPage from "./components/AuthPage";
 import { Toast } from "./components/UI";
 import { DOCUMENTS } from "./data/mockData";
+import { useAuth } from "./context/AuthContext";
 
 function App() {
+  const [path, setPath] = useState(() => window.location.pathname);
+  useEffect(() => {
+    const handlePopState = () => setPath(window.location.pathname);
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
   const [entered, setEntered] = useState(false);
   const [page, setPage] = useState("dashboard");
   const [collapsed, setCollapsed] = useState(false);
@@ -28,13 +37,34 @@ function App() {
   const [quizConfig, setQuizConfig] = useState({ topic: "All Topics", difficulty: "Medium", count: 10, qtype: "MCQ" });
   const [quizResult, setQuizResult] = useState(null);
   const [toast, setToast] = useState(null);
+  const { user, isInitializing } = useAuth();
+
+  if (path === "/auth/login" || path === "/auth/register") {
+    return <AuthPage mode={path.endsWith("register") ? "register" : "login"} />;
+  }
+
+  if (isInitializing) return <div className="sa-root min-h-screen flex items-center justify-center text-sm" style={{ color: "var(--muted)" }}>Restoring your session...</div>;
+  if (path === "/dashboard" && !user) {
+    window.history.replaceState({}, "", "/auth/login");
+    return <AuthPage mode="login" />;
+  }
 
   const showToast = (msg) => setToast(msg);
   const go = (p) => { setPage(p); setMobileOpen(false); };
+  const openDashboard = () => {
+    if (user) {
+      window.history.pushState({}, "", "/dashboard");
+      setPath("/dashboard");
+      setEntered(true);
+    } else {
+      window.history.pushState({}, "", "/auth/login");
+      setPath("/auth/login");
+    }
+  };
 
-  if (!entered) return (
+  if (!entered && path !== "/dashboard") return (
     <div className="sa-root">
-      <Landing onEnter={() => { setEntered(true); setPage("dashboard"); }} />
+      <Landing onEnter={openDashboard} />
     </div>
   );
 
@@ -76,7 +106,7 @@ function App() {
     <div className="sa-root h-screen flex overflow-hidden">
       <Sidebar page={activeNavId} setPage={go} collapsed={collapsed} setCollapsed={setCollapsed} mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
       <div className="flex-1 flex flex-col min-w-0">
-        <Topbar title={titles[page]?.[0] || "StudyAI"} subtitle={null} onMenuClick={() => setMobileOpen(true)} />
+        <Topbar title={titles[page]?.[0] || "ExamVault"} subtitle={null} onMenuClick={() => setMobileOpen(true)} />
         <div className="flex-1 overflow-y-auto sa-scroll p-4 md:p-8">
           {body}
         </div>

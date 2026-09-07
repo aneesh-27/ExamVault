@@ -4,6 +4,7 @@ import {
   ClipboardList, Calendar,
 } from "lucide-react";
 import { Badge, ProgressBar } from "./UI";
+import ThemeToggle from "./ThemeToggle";
 
 function Landing({ onEnter }) {
   const features = [
@@ -21,9 +22,12 @@ function Landing({ onEnter }) {
           <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--ink)" }}>
             <GraduationCap size={18} color="var(--accent)" />
           </div>
-          <span className="sa-serif text-lg font-semibold">StudyAI</span>
+          <span className="sa-serif text-lg font-semibold">ExamVault</span>
         </div>
-        <button onClick={onEnter} className="sa-btn-outline text-sm font-medium px-4 py-2">Open dashboard</button>
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
+          <button onClick={onEnter} className="sa-btn-outline text-sm font-medium px-4 py-2">Open dashboard</button>
+        </div>
       </header>
 
       <section className="max-w-6xl mx-auto px-6 pt-10 pb-20 grid md:grid-cols-2 gap-12 items-center">
@@ -48,7 +52,7 @@ function Landing({ onEnter }) {
           </div>
         </div>
 
-        <div className="sa-card sa-card-lg p-4 shadow-sm" style={{ boxShadow: "0 20px 50px rgba(20,33,61,0.08)" }}>
+        <div className="sa-card sa-card-lg p-4 shadow-sm" style={{ boxShadow: "0 20px 50px var(--shadow-color)" }}>
           <div className="rounded-xl p-4" style={{ background: "var(--ink)" }}>
             <div className="flex items-center justify-between mb-4">
               <span className="text-xs font-medium" style={{ color: "#C7CEE0" }}>Continue Learning</span>
@@ -59,7 +63,7 @@ function Landing({ onEnter }) {
           </div>
           <div className="grid grid-cols-2 gap-3 mt-4">
             {[["Quizzes", "12"], ["Avg Score", "78%"], ["Streak", "5 days"], ["Questions", "145"]].map(([label, val]) => (
-              <div key={label} className="rounded-lg p-3" style={{ background: "#F4F2EC" }}>
+              <div key={label} className="rounded-lg p-3" style={{ background: "var(--surface-subtle)" }}>
                 <div className="sa-serif text-xl font-semibold">{val}</div>
                 <div className="text-xs" style={{ color: "var(--muted)" }}>{label}</div>
               </div>

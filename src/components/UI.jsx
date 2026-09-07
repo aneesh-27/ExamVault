@@ -14,11 +14,11 @@ function ProgressBar({ value, tone = "ink", height = 8 }) {
 
 function Badge({ children, tone = "muted" }) {
   const styles = {
-    muted: { background: "#EFEDE6", color: "#54596B" },
+    muted: { background: "var(--chip-bg)", color: "var(--chip-text)" },
     accent: { background: "var(--accent-soft)", color: "var(--accent-ink)" },
     success: { background: "var(--success-soft)", color: "var(--success)" },
     danger: { background: "var(--danger-soft)", color: "var(--danger)" },
-    info: { background: "#E5EEF7", color: "var(--info)" },
+    info: { background: "var(--info-soft)", color: "var(--info)" },
   };
   return <span className="sa-badge" style={styles[tone]}>{children}</span>;
 }
@@ -29,7 +29,7 @@ function Toast({ message, onClose }) {
     return () => clearTimeout(t);
   }, [onClose]);
   return (
-    <div className="sa-toast fixed bottom-6 right-6 z-50 sa-card px-4 py-3 shadow-lg flex items-center gap-2" style={{ boxShadow: "0 10px 30px rgba(20,33,61,0.15)" }}>
+    <div className="sa-toast fixed bottom-6 right-6 z-50 sa-card px-4 py-3 shadow-lg flex items-center gap-2" style={{ boxShadow: "0 10px 30px var(--shadow-popup)" }}>
       <CheckCircle2 size={18} color="var(--success)" />
       <span className="text-sm font-medium">{message}</span>
     </div>
@@ -39,7 +39,7 @@ function Toast({ message, onClose }) {
 function EmptyState({ icon: Icon, title, description, action }) {
   return (
     <div className="flex flex-col items-center justify-center text-center py-16 px-6">
-      <div className="w-14 h-14 rounded-full flex items-center justify-center mb-4" style={{ background: "#F0EEE6" }}>
+      <div className="w-14 h-14 rounded-full flex items-center justify-center mb-4" style={{ background: "var(--chip-bg)" }}>
         <Icon size={24} color="var(--muted)" />
       </div>
       <h3 className="sa-serif text-lg font-semibold mb-1">{title}</h3>
@@ -52,9 +52,9 @@ function EmptyState({ icon: Icon, title, description, action }) {
 function SkeletonCard() {
   return (
     <div className="sa-card p-4">
-      <div className="h-4 w-2/3 rounded mb-3" style={{ background: "#EFEDE6" }} />
-      <div className="h-3 w-1/2 rounded mb-2" style={{ background: "#F2F0E9" }} />
-      <div className="h-3 w-1/3 rounded" style={{ background: "#F2F0E9" }} />
+      <div className="h-4 w-2/3 rounded mb-3" style={{ background: "var(--surface-subtle)" }} />
+      <div className="h-3 w-1/2 rounded mb-2" style={{ background: "var(--line-subtle)" }} />
+      <div className="h-3 w-1/3 rounded" style={{ background: "var(--line-subtle)" }} />
     </div>
   );
 }

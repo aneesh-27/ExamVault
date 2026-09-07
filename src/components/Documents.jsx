@@ -27,15 +27,15 @@ function Documents({ go, showToast, selectDoc }) {
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">
-        <div className="flex items-center gap-2 px-3 py-2 rounded-lg flex-1" style={{ background: "#F1EFE8" }}>
+        <div className="flex items-center gap-2 px-3 py-2 rounded-lg flex-1 border" style={{ background: "var(--input-bg)", borderColor: "var(--line)" }}>
           <Search size={15} color="var(--muted)" />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search your documents..." className="bg-transparent text-sm outline-none w-full" />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search your documents..." className="bg-transparent text-sm outline-none w-full" style={{ color: "var(--text)" }} />
         </div>
         <div className="flex items-center gap-1 sa-card px-1 py-1">
           {["All", "PDF", "PPTX"].map((t) => (
             <button key={t} onClick={() => setFilterType(t)}
-              className="px-3 py-1.5 text-xs font-medium rounded-md"
-              style={{ background: filterType === t ? "var(--ink)" : "transparent", color: filterType === t ? "#fff" : "var(--text)" }}>
+              className="px-3 py-1.5 text-xs font-medium rounded-md transition-colors"
+              style={{ background: filterType === t ? "var(--ink-btn)" : "transparent", color: filterType === t ? "var(--ink-btn-text)" : "var(--text)" }}>
               {t}
             </button>
           ))}
@@ -51,15 +51,15 @@ function Documents({ go, showToast, selectDoc }) {
             <div key={d.id} className="sa-card p-4 flex flex-col relative">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-start gap-2 min-w-0">
-                  <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "#EFEDE6" }}>
-                    <FileText size={16} color="var(--ink)" />
+                  <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "var(--chip-bg)" }}>
+                    <FileText size={16} color="var(--accent)" />
                   </div>
                   <div className="min-w-0">
                     <div className="text-sm font-medium truncate">{d.name}</div>
                     <div className="text-xs" style={{ color: "var(--muted)" }}>{d.type} · {d.pages} pages</div>
                   </div>
                 </div>
-                <button onClick={() => setConfirmDelete(d.id)} className="p-1 rounded hover:bg-black/5 flex-shrink-0">
+                <button onClick={() => setConfirmDelete(d.id)} className="p-1 rounded hover:bg-black/10 dark:hover:bg-white/10 flex-shrink-0" title="Delete document">
                   <Trash2 size={14} color="var(--muted)" />
                 </button>
               </div>
@@ -82,7 +82,7 @@ function Documents({ go, showToast, selectDoc }) {
               </div>
 
               {confirmDelete === d.id && (
-                <div className="absolute inset-0 rounded-[14px] flex flex-col items-center justify-center gap-3 p-4 text-center" style={{ background: "rgba(255,255,255,0.97)" }}>
+                <div className="absolute inset-0 rounded-[14px] flex flex-col items-center justify-center gap-3 p-4 text-center z-10" style={{ background: "var(--surface)", border: "1px solid var(--line)" }}>
                   <AlertCircle size={20} color="var(--danger)" />
                   <p className="text-sm font-medium">Delete "{d.name}"?</p>
                   <p className="text-xs" style={{ color: "var(--muted)" }}>This can't be undone.</p>
@@ -100,6 +100,5 @@ function Documents({ go, showToast, selectDoc }) {
     </div>
   );
 }
-
 
 export default Documents;

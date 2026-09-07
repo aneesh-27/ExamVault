@@ -1,4 +1,4 @@
-// Central mock data store for StudyAI — swap these for real API calls later.
+// Central mock data store for ExamVault — swap these for real API calls later.
 import {
   LayoutDashboard, FileText, MessageSquare, HelpCircle, BookOpen, Layers,
   ClipboardList, Calendar, TrendingUp, Settings as SettingsIcon,

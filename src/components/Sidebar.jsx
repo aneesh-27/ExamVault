@@ -1,15 +1,18 @@
 import React from "react";
 import { GraduationCap, ChevronLeft, ChevronRight } from "lucide-react";
 import { NAV_ITEMS } from "../data/mockData";
+import { useAuth } from "../context/AuthContext";
 
 function Sidebar({ page, setPage, collapsed, setCollapsed, mobileOpen, setMobileOpen }) {
+  const { user } = useAuth();
+  const initials = user?.full_name?.slice(0, 2).toUpperCase() || "EV";
   const content = (
     <div className="sa-sidebar h-full flex flex-col" style={{ width: collapsed ? 72 : 240 }}>
       <div className="flex items-center gap-2 px-4 py-5" style={{ minHeight: 64 }}>
         <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "rgba(232,163,61,0.15)" }}>
           <GraduationCap size={18} color="var(--accent)" />
         </div>
-        {!collapsed && <span className="sa-serif text-white text-base font-semibold">StudyAI</span>}
+        {!collapsed && <span className="sa-serif text-white text-base font-semibold">ExamVault</span>}
       </div>
 
       <nav className="flex-1 px-3 space-y-1 overflow-y-auto sa-scroll">
@@ -35,12 +38,12 @@ function Sidebar({ page, setPage, collapsed, setCollapsed, mobileOpen, setMobile
         </button>
         <div className="flex items-center gap-2 px-2 py-2 rounded-lg" style={{ background: "rgba(255,255,255,0.05)" }}>
           <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: "var(--accent)" }}>
-            <span className="text-xs font-bold" style={{ color: "var(--accent-ink)" }}>AR</span>
+            <span className="text-xs font-bold" style={{ color: "var(--accent-ink)" }}>{initials}</span>
           </div>
           {!collapsed && (
             <div className="min-w-0">
-              <div className="text-white text-xs font-medium truncate">Aarav Rao</div>
-              <div className="text-xs truncate" style={{ color: "#9BA4BE" }}>B.Tech, Sem 5</div>
+              <div className="text-white text-xs font-medium truncate">{user?.full_name || "ExamVault student"}</div>
+              <div className="text-xs truncate" style={{ color: "#9BA4BE" }}>{user?.reputation_credits ?? 0} Vault Credits</div>
             </div>
           )}
         </div>

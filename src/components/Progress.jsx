@@ -4,8 +4,24 @@ import {
   Radar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 import { WEEKLY_ACTIVITY, SCORE_TREND, TOPIC_MASTERY_RADAR } from "../data/mockData";
+import { useTheme } from "../context/ThemeContext";
 
 function ProgressPage({ go }) {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+
+  const gridStroke = isDark ? "#222C40" : "#EDEAE1";
+  const axisStroke = isDark ? "#94A3B8" : "#6B7280";
+  const tooltipStyle = {
+    background: isDark ? "#131926" : "#FFFFFF",
+    borderRadius: 10,
+    border: `1px solid ${isDark ? "#222C40" : "#E7E4DA"}`,
+    color: isDark ? "#F1F5F9" : "#1C2130",
+    fontSize: 12,
+  };
+  const lineStroke = isDark ? "#F59E0B" : "#14213D";
+  const barFill = isDark ? "#38BDF8" : "#14213D";
+
   return (
     <div className="sa-fade-in space-y-6">
       <div>
@@ -27,11 +43,11 @@ function ProgressPage({ go }) {
           <h3 className="font-semibold text-sm mb-3">Quiz Score Over Time</h3>
           <ResponsiveContainer width="100%" height={220}>
             <LineChart data={SCORE_TREND}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#EDEAE1" />
-              <XAxis dataKey="attempt" tick={{ fontSize: 11 }} stroke="#6B7280" />
-              <YAxis tick={{ fontSize: 11 }} stroke="#6B7280" domain={[0, 100]} />
-              <Tooltip contentStyle={{ borderRadius: 10, border: "1px solid #E7E4DA", fontSize: 12 }} />
-              <Line type="monotone" dataKey="score" stroke="#14213D" strokeWidth={2.5} dot={{ r: 4, fill: "#E8A33D" }} />
+              <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
+              <XAxis dataKey="attempt" tick={{ fontSize: 11 }} stroke={axisStroke} />
+              <YAxis tick={{ fontSize: 11 }} stroke={axisStroke} domain={[0, 100]} />
+              <Tooltip contentStyle={tooltipStyle} />
+              <Line type="monotone" dataKey="score" stroke={lineStroke} strokeWidth={2.5} dot={{ r: 4, fill: "var(--accent)" }} />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -40,9 +56,9 @@ function ProgressPage({ go }) {
           <h3 className="font-semibold text-sm mb-3">Topic Mastery</h3>
           <ResponsiveContainer width="100%" height={220}>
             <RadarChart data={TOPIC_MASTERY_RADAR}>
-              <PolarGrid stroke="#EDEAE1" />
-              <PolarAngleAxis dataKey="topic" tick={{ fontSize: 10, fill: "#6B7280" }} />
-              <Radar dataKey="value" stroke="#E8A33D" fill="#E8A33D" fillOpacity={0.35} />
+              <PolarGrid stroke={gridStroke} />
+              <PolarAngleAxis dataKey="topic" tick={{ fontSize: 10, fill: axisStroke }} />
+              <Radar dataKey="value" stroke="var(--accent)" fill="var(--accent)" fillOpacity={0.35} />
             </RadarChart>
           </ResponsiveContainer>
         </div>
@@ -51,11 +67,11 @@ function ProgressPage({ go }) {
           <h3 className="font-semibold text-sm mb-3">Weekly Study Activity</h3>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={WEEKLY_ACTIVITY}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#EDEAE1" />
-              <XAxis dataKey="day" tick={{ fontSize: 11 }} stroke="#6B7280" />
-              <YAxis tick={{ fontSize: 11 }} stroke="#6B7280" />
-              <Tooltip contentStyle={{ borderRadius: 10, border: "1px solid #E7E4DA", fontSize: 12 }} />
-              <Bar dataKey="hours" fill="#14213D" radius={[6, 6, 0, 0]} />
+              <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
+              <XAxis dataKey="day" tick={{ fontSize: 11 }} stroke={axisStroke} />
+              <YAxis tick={{ fontSize: 11 }} stroke={axisStroke} />
+              <Tooltip contentStyle={tooltipStyle} />
+              <Bar dataKey="hours" fill={barFill} radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -76,12 +92,19 @@ function ProgressPage({ go }) {
         <div className="sa-card sa-card-lg p-5">
           <h3 className="font-semibold text-sm mb-3">Recommended Next Steps</h3>
           <ol className="space-y-2 text-sm">
-            <li className="flex items-center gap-2"><span className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0" style={{ background: "var(--accent-soft)", color: "var(--accent-ink)" }}>1</span>Revise Routing Algorithms</li>
-            <li className="flex items-center gap-2"><span className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0" style={{ background: "var(--accent-soft)", color: "var(--accent-ink)" }}>2</span>Take the TCP/IP quiz
-              <button onClick={() => go("quiz-setup")} className="ml-auto text-xs font-medium" style={{ color: "var(--info)" }}>Start →</button>
+            <li className="flex items-center gap-2">
+              <span className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0" style={{ background: "var(--accent-soft)", color: "var(--accent-ink)" }}>1</span>
+              <span>Revise Routing Algorithms</span>
             </li>
-            <li className="flex items-center gap-2"><span className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0" style={{ background: "var(--accent-soft)", color: "var(--accent-ink)" }}>3</span>Review Transport Layer flashcards
-              <button onClick={() => go("flashcards")} className="ml-auto text-xs font-medium" style={{ color: "var(--info)" }}>Start →</button>
+            <li className="flex items-center gap-2">
+              <span className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0" style={{ background: "var(--accent-soft)", color: "var(--accent-ink)" }}>2</span>
+              <span>Take the TCP/IP quiz</span>
+              <button onClick={() => go("quiz-setup")} className="ml-auto text-xs font-medium hover:underline" style={{ color: "var(--info)" }}>Start →</button>
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0" style={{ background: "var(--accent-soft)", color: "var(--accent-ink)" }}>3</span>
+              <span>Review Transport Layer flashcards</span>
+              <button onClick={() => go("flashcards")} className="ml-auto text-xs font-medium hover:underline" style={{ color: "var(--info)" }}>Start →</button>
             </li>
           </ol>
         </div>
@@ -89,6 +112,5 @@ function ProgressPage({ go }) {
     </div>
   );
 }
-
 
 export default ProgressPage;
