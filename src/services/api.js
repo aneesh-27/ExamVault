@@ -46,3 +46,46 @@ export function getCurrentUser(accessToken) {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
 }
+
+export function uploadStudyDocument(file, accessToken) {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  return fetch(`${API_BASE_URL}/documents/upload`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: formData,
+  }).then(async (res) => {
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(err || "Upload failed");
+    }
+    return res.json();
+  });
+}
+
+export function getDocuments(accessToken) {
+  return request("/documents/", {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+}
+
+export function getDocument(documentId, accessToken) {
+  return request(`/documents/${documentId}`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+}
+
+export function getDocumentTopics(documentId, accessToken) {
+  return request(`/documents/${documentId}/topics`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+}
+
+export function getTopicFlashcards(topicId, accessToken) {
+  return request(`/documents/topics/${topicId}/flashcards`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+}

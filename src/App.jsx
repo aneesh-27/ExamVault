@@ -5,6 +5,7 @@ import Topbar from "./components/Topbar";
 import Dashboard from "./components/Dashboard";
 import Documents from "./components/Documents";
 import UploadPage from "./components/UploadPage";
+import DocumentStudy from "./components/DocumentStudy";
 import Analysis from "./components/Analysis";
 import QuizSetup from "./components/QuizSetup";
 import QuizRun from "./components/QuizRun";
@@ -37,7 +38,7 @@ function App() {
   const [quizConfig, setQuizConfig] = useState({ topic: "All Topics", difficulty: "Medium", count: 10, qtype: "MCQ" });
   const [quizResult, setQuizResult] = useState(null);
   const [toast, setToast] = useState(null);
-  const { user, isInitializing } = useAuth();
+  const { user, accessToken, isInitializing } = useAuth();
 
   if (path === "/auth/login" || path === "/auth/register") {
     return <AuthPage mode={path.endsWith("register") ? "register" : "login"} />;
@@ -72,6 +73,7 @@ function App() {
     dashboard: ["Dashboard", null],
     documents: ["My Documents", null],
     upload: ["Upload Material", null],
+    "document-study": ["Study Document", null],
     analysis: ["Document Analysis", null],
     "quiz-setup": ["Quiz Generator", null],
     "quiz-run": ["Quiz", null],
@@ -84,19 +86,20 @@ function App() {
     progress: ["Progress", null],
     settings: ["Settings", null],
   };
-  const activeNavId = page.startsWith("quiz") ? "quiz-setup" : page === "analysis" || page === "upload" ? "documents" : page === "mock-exam" ? "mock-exam" : page;
+  const activeNavId = page.startsWith("quiz") ? "quiz-setup" : page === "analysis" || page === "upload" || page === "document-study" ? "documents" : page === "mock-exam" ? "mock-exam" : page;
 
   let body;
   if (page === "dashboard") body = <Dashboard go={go} showToast={showToast} />;
-  else if (page === "documents") body = <Documents go={go} showToast={showToast} selectDoc={setSelectedDoc} />;
-  else if (page === "upload") body = <UploadPage go={go} showToast={showToast} />;
+  else if (page === "documents") body = <Documents go={go} showToast={showToast} selectDoc={setSelectedDoc} accessToken={accessToken} />;
+  else if (page === "upload") body = <UploadPage go={go} showToast={showToast} accessToken={accessToken} />;
+  else if (page === "document-study") body = <DocumentStudy go={go} doc={selectedDoc} accessToken={accessToken} showToast={showToast} />;
   else if (page === "analysis") body = <Analysis go={go} doc={selectedDoc} />;
   else if (page === "quiz-setup") body = <QuizSetup go={go} config={quizConfig} setConfig={setQuizConfig} />;
   else if (page === "quiz-run") body = <QuizRun go={go} config={quizConfig} onFinish={(r) => { setQuizResult(r); go("quiz-result"); }} />;
   else if (page === "quiz-result") body = <QuizResult go={go} result={quizResult} showToast={showToast} />;
   else if (page === "summary") body = <SummaryPage go={go} />;
   else if (page === "chat") body = <ChatPage />;
-  else if (page === "flashcards") body = <Flashcards showToast={showToast} />;
+  else if (page === "flashcards") body = <Flashcards showToast={showToast} accessToken={accessToken} />;
   else if (page === "mock-exam") body = <MockExamIntro go={go} setQuizConfig={setQuizConfig} />;
   else if (page === "planner") body = <Planner />;
   else if (page === "progress") body = <ProgressPage go={go} />;

@@ -1,27 +1,34 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { FileUp, FileText, CheckCircle2, Circle } from "lucide-react";
 import { ProgressBar } from "./UI";
+import { uploadStudyDocument } from "../services/api";
 
-function UploadPage({ go, showToast }) {
-  const [stage, setStage] = useState("idle"); // idle, processing, done
-  const [stepIndex, setStepIndex] = useState(0);
-  const steps = ["Uploading file", "Reading document", "Detecting topics", "Preparing AI tools", "Ready"];
+function UploadPage({ go, showToast, accessToken }) {
+  const [stage, setStage] = useState("idle"); // idle, processing, done, failed
+  const [statusText, setStatusText] = useState("");
+  const [fileData, setFileData] = useState(null);
   const fileInputRef = useRef(null);
 
-  const startProcessing = () => {
-    setStage("processing");
-    setStepIndex(0);
-  };
+  const startProcessing = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-  useEffect(() => {
-    if (stage !== "processing") return;
-    if (stepIndex >= steps.length - 1) {
-      const t = setTimeout(() => setStage("done"), 500);
-      return () => clearTimeout(t);
+    setFileData(file);
+    setStage("processing");
+    setStatusText("Uploading and parsing document...");
+
+    try {
+      const response = await uploadStudyDocument(file, accessToken);
+      // Backend returns document object
+      setStatusText("Generating flashcards and topics...");
+      // For now the backend processes async in the background.
+      // We will transition to "done".
+      setTimeout(() => setStage("done"), 1500);
+    } catch (err) {
+      setStage("failed");
+      showToast(err.message || "Upload failed.");
     }
-    const t = setTimeout(() => setStepIndex((i) => i + 1), 700);
-    return () => clearTimeout(t);
-  }, [stage, stepIndex]);
+  };
 
   return (
     <div className="sa-fade-in max-w-2xl mx-auto">
@@ -47,30 +54,30 @@ function UploadPage({ go, showToast }) {
         </div>
       )}
 
-      {stage === "processing" && (
+      {(stage === "processing" || stage === "failed") && (
         <div className="sa-card sa-card-lg p-8">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: "#EFEDE6" }}>
               <FileText size={18} color="var(--ink)" />
             </div>
             <div>
-              <div className="text-sm font-medium">Computer_Networks_Notes.pdf</div>
-              <div className="text-xs" style={{ color: "var(--muted)" }}>2.4 MB</div>
+              <div className="text-sm font-medium">{fileData?.name}</div>
+              <div className="text-xs" style={{ color: "var(--muted)" }}>{fileData ? (fileData.size / 1024 / 1024).toFixed(1) : 0} MB</div>
             </div>
           </div>
-          <div className="space-y-3">
-            {steps.map((s, i) => (
-              <div key={s} className="flex items-center gap-3">
-                {i < stepIndex ? <CheckCircle2 size={17} color="var(--success)" /> :
-                  i === stepIndex ? <div className="w-4 h-4 rounded-full border-2 flex-shrink-0" style={{ borderColor: "var(--accent)", borderTopColor: "transparent", animation: "spin 0.8s linear infinite" }} /> :
-                    <Circle size={16} color="#D8D5C9" />}
-                <span className={`text-sm ${i <= stepIndex ? "font-medium" : ""}`} style={{ color: i <= stepIndex ? "var(--text)" : "var(--muted)" }}>{s}</span>
-              </div>
-            ))}
+          <div className="space-y-3 mb-6">
+             <div className="flex items-center gap-3">
+               {stage === "processing" ? <div className="w-4 h-4 rounded-full border-2 flex-shrink-0" style={{ borderColor: "var(--accent)", borderTopColor: "transparent", animation: "spin 0.8s linear infinite" }} /> : null}
+               {stage === "failed" ? <Circle size={16} color="var(--danger)" /> : null}
+               <span className="text-sm font-medium" style={{ color: "var(--text)" }}>{statusText || (stage === "failed" ? "Failed" : "Processing...")}</span>
+             </div>
           </div>
-          <div className="mt-6">
-            <ProgressBar value={((stepIndex + 1) / steps.length) * 100} tone="accent" height={6} />
-          </div>
+          {stage === "processing" && <ProgressBar value={100} tone="accent" height={6} />}
+          {stage === "failed" && (
+            <div className="mt-4">
+              <button onClick={() => setStage("idle")} className="sa-btn-outline px-5 py-2.5 text-sm font-medium">Try Again</button>
+            </div>
+          )}
         </div>
       )}
 
@@ -79,17 +86,15 @@ function UploadPage({ go, showToast }) {
           <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: "var(--success-soft)" }}>
             <CheckCircle2 size={24} color="var(--success)" />
           </div>
-          <h3 className="sa-serif text-xl font-semibold mb-2">Analysis complete</h3>
-          <p className="text-sm mb-6" style={{ color: "var(--muted)" }}>We detected 6 topics across 86 pages, ready for quizzes, summaries and chat.</p>
+          <h3 className="sa-serif text-xl font-semibold mb-2">Upload complete</h3>
+          <p className="text-sm mb-6" style={{ color: "var(--muted)" }}>Your document is being processed. It will appear in your documents list shortly.</p>
           <div className="flex gap-3 justify-center">
-            <button onClick={() => go("analysis")} className="sa-btn-accent px-5 py-2.5 text-sm">View Analysis</button>
-            <button onClick={() => go("documents")} className="sa-btn-outline px-5 py-2.5 text-sm font-medium">Back to Documents</button>
+            <button onClick={() => go("documents")} className="sa-btn-outline px-5 py-2.5 text-sm font-medium">View Documents</button>
           </div>
         </div>
       )}
     </div>
   );
 }
-
 
 export default UploadPage;

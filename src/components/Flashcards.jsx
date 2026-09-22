@@ -1,38 +1,67 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Check, RotateCcw, ArrowLeft, ArrowRight } from "lucide-react";
 import { Badge, ProgressBar } from "./UI";
-import { FLASHCARDS } from "../data/mockData";
+import { getTopicFlashcards } from "../services/api";
 
-function Flashcards({ showToast }) {
+function Flashcards({ topic, accessToken, showToast }) {
   const [index, setIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [known, setKnown] = useState(0);
+  
+  const [flashcards, setFlashcards] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const card = FLASHCARDS[index % FLASHCARDS.length];
-  const next = () => { setFlipped(false); setTimeout(() => setIndex((i) => (i + 1) % FLASHCARDS.length), 150); };
-  const prev = () => { setFlipped(false); setTimeout(() => setIndex((i) => (i - 1 + FLASHCARDS.length) % FLASHCARDS.length), 150); };
+  useEffect(() => {
+    async function loadFlashcards() {
+      if (!topic?.id) return;
+      setLoading(true);
+      try {
+        const res = await getTopicFlashcards(topic.id, accessToken);
+        setFlashcards(res.flashcards || []);
+        setIndex(0);
+        setFlipped(false);
+      } catch (err) {
+        showToast(err.message || "Failed to load flashcards");
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadFlashcards();
+  }, [topic, accessToken, showToast]);
+
+  if (loading) {
+    return <div className="text-sm" style={{ color: "var(--muted)" }}>Loading flashcards...</div>;
+  }
+
+  if (flashcards.length === 0) {
+    return <div className="text-sm" style={{ color: "var(--muted)" }}>No flashcards generated for this topic.</div>;
+  }
+
+  const card = flashcards[index % flashcards.length];
+  const next = () => { setFlipped(false); setTimeout(() => setIndex((i) => (i + 1) % flashcards.length), 150); };
+  const prev = () => { setFlipped(false); setTimeout(() => setIndex((i) => (i - 1 + flashcards.length) % flashcards.length), 150); };
 
   return (
     <div className="sa-fade-in max-w-xl mx-auto">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="sa-serif text-2xl font-semibold">Flashcards</h2>
-        <Badge tone="info">{index + 1} / {FLASHCARDS.length} cards</Badge>
+        <h2 className="sa-serif text-2xl font-semibold">{topic.name}</h2>
+        <Badge tone="info">{index + 1} / {flashcards.length} cards</Badge>
       </div>
-      <ProgressBar value={((index + 1) / FLASHCARDS.length) * 100} tone="accent" height={6} />
+      <ProgressBar value={((index + 1) / flashcards.length) * 100} tone="accent" height={6} />
 
       <div className="sa-flip-card mt-6" style={{ height: 280 }}>
         <div className={`sa-flip-inner ${flipped ? "flipped" : ""}`} onClick={() => setFlipped(!flipped)}>
-          <div className="sa-flip-face sa-card sa-card-lg p-8 cursor-pointer" style={{ background: "var(--ink)" }}>
+          <div className="sa-flip-face sa-card sa-card-lg p-8 cursor-pointer flex flex-col justify-center items-center" style={{ background: "var(--ink)" }}>
             <div className="text-center">
-              <Badge tone="accent">{card.topic}</Badge>
-              <p className="sa-serif text-white text-xl font-medium mt-5 leading-relaxed">{card.q}</p>
+              <Badge tone="accent">Question</Badge>
+              <p className="sa-serif text-white text-xl font-medium mt-5 leading-relaxed">{card.question}</p>
               <p className="text-xs mt-6" style={{ color: "#9BA4BE" }}>Tap to reveal answer</p>
             </div>
           </div>
-          <div className="sa-flip-face sa-flip-back sa-card sa-card-lg p-8 cursor-pointer">
-            <div className="text-center">
+          <div className="sa-flip-face sa-flip-back sa-card sa-card-lg p-8 cursor-pointer flex flex-col justify-center items-center">
+            <div className="text-center overflow-y-auto w-full h-full custom-scrollbar">
               <Badge tone="success">Answer</Badge>
-              <p className="text-sm mt-5 leading-relaxed">{card.a}</p>
+              <p className="text-sm mt-5 leading-relaxed">{card.answer}</p>
             </div>
           </div>
         </div>
@@ -55,6 +84,5 @@ function Flashcards({ showToast }) {
     </div>
   );
 }
-
 
 export default Flashcards;

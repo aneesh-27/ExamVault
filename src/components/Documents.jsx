@@ -1,17 +1,48 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Upload, Search, FileText, Trash2, AlertCircle } from "lucide-react";
 import { Badge, ProgressBar, EmptyState } from "./UI";
-import { DOCUMENTS } from "../data/mockData";
+import { getDocuments } from "../services/api";
 
-function Documents({ go, showToast, selectDoc }) {
+function Documents({ go, showToast, selectDoc, accessToken }) {
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("All");
   const [confirmDelete, setConfirmDelete] = useState(null);
-  const [docs, setDocs] = useState(DOCUMENTS);
+  const [docs, setDocs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const res = await getDocuments(accessToken);
+        setDocs(res.documents || []);
+      } catch (err) {
+        showToast(err.message || "Failed to load documents.");
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, [accessToken, showToast]);
+
+  useEffect(() => {
+    const hasProcessing = docs.some(d => d.status && d.status.toLowerCase().includes("processing"));
+    if (!hasProcessing) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await getDocuments(accessToken);
+        setDocs(res.documents || []);
+      } catch (e) {
+        console.error("Failed to poll documents", e);
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [docs, accessToken]);
 
   const filtered = docs.filter((d) =>
-    d.name.toLowerCase().includes(search.toLowerCase()) &&
-    (filterType === "All" || d.type === filterType)
+    (d.filename || d.name || "").toLowerCase().includes(search.toLowerCase()) &&
+    (filterType === "All" || (d.mime_type && d.mime_type.includes(filterType.toLowerCase())))
   );
 
   return (
@@ -32,7 +63,7 @@ function Documents({ go, showToast, selectDoc }) {
           <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search your documents..." className="bg-transparent text-sm outline-none w-full" style={{ color: "var(--text)" }} />
         </div>
         <div className="flex items-center gap-1 sa-card px-1 py-1">
-          {["All", "PDF", "PPTX"].map((t) => (
+          {["All", "PDF", "DOCX"].map((t) => (
             <button key={t} onClick={() => setFilterType(t)}
               className="px-3 py-1.5 text-xs font-medium rounded-md transition-colors"
               style={{ background: filterType === t ? "var(--ink-btn)" : "transparent", color: filterType === t ? "var(--ink-btn-text)" : "var(--text)" }}>
@@ -42,7 +73,9 @@ function Documents({ go, showToast, selectDoc }) {
         </div>
       </div>
 
-      {filtered.length === 0 ? (
+      {loading ? (
+        <div className="text-sm" style={{ color: "var(--muted)" }}>Loading documents...</div>
+      ) : filtered.length === 0 ? (
         <EmptyState icon={FileText} title="No documents found" description="Try a different search term or upload new study material."
           action={<button onClick={() => go("upload")} className="sa-btn-accent px-4 py-2 text-sm">Upload Study Material</button>} />
       ) : (
@@ -55,8 +88,8 @@ function Documents({ go, showToast, selectDoc }) {
                     <FileText size={16} color="var(--accent)" />
                   </div>
                   <div className="min-w-0">
-                    <div className="text-sm font-medium truncate">{d.name}</div>
-                    <div className="text-xs" style={{ color: "var(--muted)" }}>{d.type} · {d.pages} pages</div>
+                    <div className="text-sm font-medium truncate">{d.filename || d.name}</div>
+                    <div className="text-xs" style={{ color: "var(--muted)" }}>{(d.file_size / 1024 / 1024).toFixed(2)} MB</div>
                   </div>
                 </div>
                 <button onClick={() => setConfirmDelete(d.id)} className="p-1 rounded hover:bg-black/10 dark:hover:bg-white/10 flex-shrink-0" title="Delete document">
@@ -64,27 +97,25 @@ function Documents({ go, showToast, selectDoc }) {
                 </button>
               </div>
               <div className="flex items-center gap-2 mb-3 flex-wrap">
-                <Badge tone="info">{d.topicsDetected} topics</Badge>
-                <span className="text-xs" style={{ color: "var(--muted)" }}>Uploaded {d.uploadedAt}</span>
+                <Badge tone={d.status === "completed" ? "success" : "info"}>{d.status}</Badge>
+                <span className="text-xs" style={{ color: "var(--muted)" }}>{new Date(d.created_at).toLocaleDateString()}</span>
               </div>
-              <div className="mb-3">
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <span style={{ color: "var(--muted)" }}>Progress</span>
-                  <span className="font-medium">{d.progress}%</span>
-                </div>
-                <ProgressBar value={d.progress} tone={d.progress > 60 ? "success" : "accent"} height={6} />
-              </div>
-              <div className="grid grid-cols-2 gap-2 mt-auto">
-                <button onClick={() => { selectDoc(d); go("analysis"); }} className="sa-btn-primary text-xs py-2 font-medium">Study</button>
-                <button onClick={() => go("chat")} className="sa-btn-outline text-xs py-2 font-medium">Chat</button>
-                <button onClick={() => go("quiz-setup")} className="sa-btn-outline text-xs py-2 font-medium">Quiz</button>
-                <button onClick={() => go("summary")} className="sa-btn-outline text-xs py-2 font-medium">Summary</button>
+              
+              <div className="grid grid-cols-1 gap-2 mt-auto">
+                <button 
+                  onClick={() => { selectDoc(d); go("document-study"); }} 
+                  disabled={d.status !== "completed"}
+                  className="sa-btn-primary text-xs py-2 font-medium"
+                  style={{ opacity: d.status !== "completed" ? 0.5 : 1 }}
+                >
+                  {d.status === "completed" ? "Study Topics" : d.status}
+                </button>
               </div>
 
               {confirmDelete === d.id && (
                 <div className="absolute inset-0 rounded-[14px] flex flex-col items-center justify-center gap-3 p-4 text-center z-10" style={{ background: "var(--surface)", border: "1px solid var(--line)" }}>
                   <AlertCircle size={20} color="var(--danger)" />
-                  <p className="text-sm font-medium">Delete "{d.name}"?</p>
+                  <p className="text-sm font-medium">Delete "{d.filename}"?</p>
                   <p className="text-xs" style={{ color: "var(--muted)" }}>This can't be undone.</p>
                   <div className="flex gap-2">
                     <button onClick={() => setConfirmDelete(null)} className="sa-btn-outline text-xs px-3 py-1.5">Cancel</button>
