@@ -19,7 +19,6 @@ import ProgressPage from "./components/Progress";
 import SettingsPage from "./components/Settings";
 import AuthPage from "./components/AuthPage";
 import { Toast } from "./components/UI";
-import { DOCUMENTS } from "./data/mockData";
 import { useAuth } from "./context/AuthContext";
 
 function App() {
@@ -34,7 +33,7 @@ function App() {
   const [page, setPage] = useState("dashboard");
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [selectedDoc, setSelectedDoc] = useState(DOCUMENTS[1]);
+  const [selectedDoc, setSelectedDoc] = useState(null);
   const [quizConfig, setQuizConfig] = useState({ topic: "All Topics", difficulty: "Medium", count: 10, qtype: "MCQ" });
   const [quizResult, setQuizResult] = useState(null);
   const [toast, setToast] = useState(null);
@@ -89,19 +88,19 @@ function App() {
   const activeNavId = page.startsWith("quiz") ? "quiz-setup" : page === "analysis" || page === "upload" || page === "document-study" ? "documents" : page === "mock-exam" ? "mock-exam" : page;
 
   let body;
-  if (page === "dashboard") body = <Dashboard go={go} showToast={showToast} />;
+  if (page === "dashboard") body = <Dashboard go={go} showToast={showToast} selectDoc={setSelectedDoc} accessToken={accessToken} />;
   else if (page === "documents") body = <Documents go={go} showToast={showToast} selectDoc={setSelectedDoc} accessToken={accessToken} />;
   else if (page === "upload") body = <UploadPage go={go} showToast={showToast} accessToken={accessToken} />;
-  else if (page === "document-study") body = <DocumentStudy go={go} doc={selectedDoc} accessToken={accessToken} showToast={showToast} />;
-  else if (page === "analysis") body = <Analysis go={go} doc={selectedDoc} />;
+  else if (page === "document-study") body = <DocumentStudy go={go} doc={selectedDoc} selectDoc={setSelectedDoc} accessToken={accessToken} showToast={showToast} />;
+  else if (page === "analysis") body = <Analysis go={go} doc={selectedDoc} selectDoc={setSelectedDoc} accessToken={accessToken} />;
   else if (page === "quiz-setup") body = <QuizSetup go={go} config={quizConfig} setConfig={setQuizConfig} />;
   else if (page === "quiz-run") body = <QuizRun go={go} config={quizConfig} onFinish={(r) => { setQuizResult(r); go("quiz-result"); }} />;
   else if (page === "quiz-result") body = <QuizResult go={go} result={quizResult} showToast={showToast} />;
-  else if (page === "summary") body = <SummaryPage go={go} />;
+  else if (page === "summary") body = <SummaryPage go={go} accessToken={accessToken} />;
   else if (page === "chat") body = <ChatPage />;
-  else if (page === "flashcards") body = <Flashcards showToast={showToast} accessToken={accessToken} />;
+  else if (page === "flashcards") body = <Flashcards showToast={showToast} accessToken={accessToken} go={go} selectDoc={setSelectedDoc} />;
   else if (page === "mock-exam") body = <MockExamIntro go={go} setQuizConfig={setQuizConfig} />;
-  else if (page === "planner") body = <Planner />;
+  else if (page === "planner") body = <Planner go={go} showToast={showToast} selectDoc={setSelectedDoc} accessToken={accessToken} />;
   else if (page === "progress") body = <ProgressPage go={go} />;
   else if (page === "settings") body = <SettingsPage showToast={showToast} />;
 

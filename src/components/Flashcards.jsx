@@ -1,40 +1,103 @@
 import React, { useState, useEffect } from "react";
-import { Check, RotateCcw, ArrowLeft, ArrowRight } from "lucide-react";
-import { Badge, ProgressBar } from "./UI";
-import { getTopicFlashcards } from "../services/api";
+import { Check, RotateCcw, ArrowLeft, ArrowRight, Layers, FileText, Upload } from "lucide-react";
+import { Badge, ProgressBar, EmptyState } from "./UI";
+import { getTopicFlashcards, getDocuments, getDocumentTopics } from "../services/api";
 
-function Flashcards({ topic, accessToken, showToast }) {
+function Flashcards({ topic, accessToken, showToast, go, selectDoc }) {
+  const [activeTopic, setActiveTopic] = useState(topic);
   const [index, setIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [known, setKnown] = useState(0);
   
   const [flashcards, setFlashcards] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [availableTopics, setAvailableTopics] = useState([]);
 
+  // If topic prop changes externally
+  useEffect(() => {
+    if (topic) {
+      setActiveTopic(topic);
+    }
+  }, [topic]);
+
+  // If no topic is passed, discover available topics from user's documents in Neon
+  useEffect(() => {
+    async function discoverTopics() {
+      if (!activeTopic && accessToken) {
+        setLoading(true);
+        try {
+          const docRes = await getDocuments(accessToken);
+          const docs = docRes.documents || [];
+          const completedDocs = docs.filter((d) => d.status === "completed");
+
+          if (completedDocs.length > 0) {
+            // Fetch topics from first completed doc
+            const tRes = await getDocumentTopics(completedDocs[0].id, accessToken);
+            const topList = tRes.topics || [];
+            setAvailableTopics(topList);
+            if (topList.length > 0) {
+              setActiveTopic(topList[0]);
+            } else {
+              setLoading(false);
+            }
+          } else {
+            setLoading(false);
+          }
+        } catch (err) {
+          console.warn("Could not discover topics:", err);
+          setLoading(false);
+        }
+      }
+    }
+    if (!activeTopic) {
+      discoverTopics();
+    }
+  }, [activeTopic, accessToken]);
+
+  // Load flashcards for activeTopic
   useEffect(() => {
     async function loadFlashcards() {
-      if (!topic?.id) return;
+      if (!activeTopic?.id) return;
       setLoading(true);
       try {
-        const res = await getTopicFlashcards(topic.id, accessToken);
+        const res = await getTopicFlashcards(activeTopic.id, accessToken);
         setFlashcards(res.flashcards || []);
         setIndex(0);
         setFlipped(false);
       } catch (err) {
-        showToast(err.message || "Failed to load flashcards");
+        if (showToast) showToast(err.message || "Failed to load flashcards");
       } finally {
         setLoading(false);
       }
     }
-    loadFlashcards();
-  }, [topic, accessToken, showToast]);
+    if (activeTopic?.id) {
+      loadFlashcards();
+    }
+  }, [activeTopic, accessToken, showToast]);
 
   if (loading) {
-    return <div className="text-sm" style={{ color: "var(--muted)" }}>Loading flashcards...</div>;
+    return (
+      <div className="sa-fade-in text-center py-12">
+        <div className="text-sm" style={{ color: "var(--muted)" }}>Loading flashcards from Neon DB...</div>
+      </div>
+    );
   }
 
-  if (flashcards.length === 0) {
-    return <div className="text-sm" style={{ color: "var(--muted)" }}>No flashcards generated for this topic.</div>;
+  if (!activeTopic || flashcards.length === 0) {
+    return (
+      <div className="sa-fade-in max-w-xl mx-auto py-8">
+        <EmptyState
+          icon={Layers}
+          title="No Flashcards Found"
+          description="Upload a study document to automatically generate AI-extracted revision flashcards with Ollama."
+          action={
+            <button onClick={() => go && go("upload")} className="sa-btn-accent px-5 py-2.5 text-xs font-semibold flex items-center gap-1.5">
+              <Upload size={14} /> Upload Study Material
+            </button>
+          }
+        />
+      </div>
+    );
   }
 
   const card = flashcards[index % flashcards.length];
@@ -43,8 +106,11 @@ function Flashcards({ topic, accessToken, showToast }) {
 
   return (
     <div className="sa-fade-in max-w-xl mx-auto">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="sa-serif text-2xl font-semibold">{topic.name}</h2>
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+        <div>
+          <h2 className="sa-serif text-2xl font-semibold">{activeTopic?.name}</h2>
+          <span className="text-xs" style={{ color: "var(--muted)" }}>Interactive Spaced Repetition</span>
+        </div>
         <Badge tone="info">{index + 1} / {flashcards.length} cards</Badge>
       </div>
       <ProgressBar value={((index + 1) / flashcards.length) * 100} tone="accent" height={6} />
@@ -74,10 +140,10 @@ function Flashcards({ topic, accessToken, showToast }) {
       </div>
 
       <div className="grid grid-cols-2 gap-3 mt-4">
-        <button onClick={() => { setKnown(known + 1); showToast("Marked as known"); next(); }} className="sa-btn-primary py-2.5 text-sm font-medium flex items-center justify-center gap-2">
-          <Check size={15} /> I Know
+        <button onClick={() => { setKnown(known + 1); if (showToast) showToast("Marked as mastered"); next(); }} className="sa-btn-primary py-2.5 text-sm font-medium flex items-center justify-center gap-2">
+          <Check size={15} /> I Know This
         </button>
-        <button onClick={() => { showToast("Added to review pile"); next(); }} className="sa-btn-outline py-2.5 text-sm font-medium flex items-center justify-center gap-2">
+        <button onClick={() => { if (showToast) showToast("Added to review pile"); next(); }} className="sa-btn-outline py-2.5 text-sm font-medium flex items-center justify-center gap-2">
           <RotateCcw size={15} /> Review Again
         </button>
       </div>

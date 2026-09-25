@@ -89,3 +89,39 @@ export function getTopicFlashcards(topicId, accessToken) {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
 }
+
+export function getActiveStudyPlan(accessToken) {
+  return request("/planner/current", {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+}
+
+export function generateStudyPlan(payload, accessToken) {
+  return request("/planner/generate", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${accessToken}` },
+    body: JSON.stringify(payload),
+  });
+}
+
+export function toggleStudyTask(taskId, accessToken) {
+  return request(`/planner/tasks/${taskId}/toggle`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+}
+
+export function rebalanceStudyPlan(accessToken) {
+  return request("/planner/rebalance", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+}
+
+export function addStudyTask(payload, accessToken) {
+  return request("/planner/tasks", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${accessToken}` },
+    body: JSON.stringify(payload),
+  });
+}
